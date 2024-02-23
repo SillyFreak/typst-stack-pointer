@@ -5,8 +5,8 @@
 #import "../src/lib.typ" as sp
 
 #let package-meta = toml("../typst.toml").package
-#let date = none
-// #let date = datetime(year: ..., month: ..., day: ...)
+// #let date = none
+#let date = datetime(year: 2024, month: 2, day: 23)
 
 #show: project.with(
   title: "Stack Pointer",

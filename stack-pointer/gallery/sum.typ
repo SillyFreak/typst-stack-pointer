@@ -1,6 +1,6 @@
-// #import "@preview/stack-pointer:0.1.0"
-// #import "@local/stack-pointer:0.0.1"
-#import "../src/lib.typ" as stack-pointer
+#import "@preview/stack-pointer:0.1.0"
+// #import "@local/stack-pointer:0.1.0"
+// #import "../src/lib.typ" as stack-pointer
 
 #import "@preview/polylux:0.3.1": *
 #import themes.simple: *
