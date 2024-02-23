@@ -266,6 +266,72 @@ The convenience of mapping example functions to Typst functions comes in part fr
 
 In line #ref-line(1) we have the first piece of the puzzle, the #ref-fn("retval()") function. This function is emitted by the implementation closure as if it was a sequence item, but it must be handled before `execute()` could see it because it isn't actually one. In line #ref-line(2) the caller, who normally receives an array of items, now also receives the return value as the first element of that array. By destructuring, the first element is removed, and then the rest of the array needs to be emitted so that these items are part of the complete execution sequence.
 
+== Displaying execution state
+
+Until now the examples have concerned themselves with the actual execution of programs; how to get from #ref-fn("execute()")'s result to the gray boxes in this documentation was not addressed yet. This is potentially different between documents, and Stack Pointer doesn't do a lot for you here yet; still, here's one example for how execution state could be displayed.
+
+The following is a function that takes the example code and _one_ step as returned by #ref-fn("execute()"). Below, you see how it looks when the four last steps of the variable assignment example are rendered next to each other using this function:
+
+#{
+  import sp: *
+
+  let code = ```c
+  int main() {
+    int a = 0;
+    return 0;
+  }
+  ```
+
+  let steps = execute({
+    let main() = func("main", 1, l => {
+      l(0)
+      let a = 0
+      l(1); push("a", a); l(1)
+      l(2)
+    })
+    main(); l(none)
+  })
+  let steps = steps
+
+  let render-code = ```typc
+  let render(code, step) = {
+    let line = step.step.line
+    let stack = step.state.stack
+    block[
+      #code
+      #if line != none {
+        place(
+          top,
+          // dimensions are hard-coded for this specific situation
+          // don't take this part as inspiration, please ;)
+          dx: 0.5em, dy: 0.18em + (line - 1) * 1.31em,
+          circle(radius: 0.5em)
+        )
+      }
+    ]
+    block(inset: (x: 0.9em))[
+      Stack: #parbreak()
+      #if stack.len() == 0 [(empty)]
+      #list(..stack.map(frame => {
+        frame.name
+        if frame.vars.len() != 0 {
+          [: ]
+          frame.vars.pairs().map(((name, value)) => [#name~=~#value]).join[, ]
+        }
+      }))
+    ]
+  }
+  ```
+
+  let render = eval(mode: "code", render-code.text + "; render")
+
+  render-code
+
+  grid(columns: (1fr,) * 4, ..range(1, 5).map(i => render(code, steps.at(i))))
+}
+
+A more typical situation would probably put the steps on individual slides. In polylux, for example, the `only()` function can be used to only show some information (the current line markers, the stack state) on specific subslides. To do so, it makes sense to first `enumerate(start: 1)` the steps, so that each step has a subslide index attached to it. The gallery has a complete example of using Stack Pointer with Polylux.
+
 = Module reference
 
 Functions that return sequence items, or similar values like #ref-fn("retval()"), return a value of the following shape: `((type: "...", ...),)` -- that is, an array with a single element. That element is a dictionary with some string `type`, and any other payload fields depending on the type. The payload fields are exactly the parameters of the following helper functions, unless specified otherwise.
