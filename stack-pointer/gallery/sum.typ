@@ -32,10 +32,10 @@
   // this is where the magic happens: we simulate the above java code,
   // generating an array of steps with all the actions that influence the
   // call stack
-  let steps = {
+  let steps = execute({
     // println returns nothing, so it's easy to define and use
     // it's also not part of the shown code, so the line numbers are `none`
-    let println(x) = simulate-func("println", none, l => {
+    let println(x) = func("println", none, l => {
       // always begin with adding the parameter variables
       l(none, push("x", x))
 
@@ -46,7 +46,7 @@
     })
 
     // this is a function with return value. calling it needs some care
-    let add(x, y) = simulate-func("add", 11, l => {
+    let add(x, y) = func("add", 11, l => {
       l(0, push("x", x), push("y", y))
 
       // int result = x + y;
@@ -60,10 +60,10 @@
       // the exit/return value will be first in the result of `add()`.
       // it needs to be removed by the caller, so that the end result
       // contains only the steps for the subslides
-      exit(result)
+      retval(result)
     })
 
-    let sum(x, y, z) = simulate-func("sum", 6, l => {
+    let sum(x, y, z) = func("sum", 6, l => {
       l(0, push("x", x), push("y", y), push("z", z))
 
       // int result = add(x, y);
@@ -81,10 +81,10 @@
 
       // return result;
       l(3)
-      exit(result)
+      retval(result)
     })
 
-    let main() = simulate-func("main", 1, l => {
+    let main() = func("main", 1, l => {
       l(0, push("args", [_\<reference\>_]))
 
       // int a = 2, b = 3, c = 4;
@@ -116,7 +116,8 @@
     // after the main() call, I also want to show the empty stack,
     // so add a subslide on the final line of main()
     l(5)
-  }
+  })
+  let steps = steps.enumerate(start: 1)
 
   // when generating the slide, it's crucial to specify the max-repetitions
   polylux-slide(max-repetitions: steps.len())[
@@ -125,26 +126,35 @@
 
     #set text(size: 0.8em)
     #grid(columns: (50%, 1fr), {
-      line-markers(steps, step => place(
-        dx: -1em,
-        // this is hard-coded for the specific font - could be more flexible
-        dy: -0.0em + (step.line - 1) * 1.12em,
-        sym.arrow
-      ))
+      for (when, step) in steps {
+        let line = step.step.line
+        if line == none { continue }
+        // this step has an associated line;
+        // render the highlight only in the specific subslide
+        only(when, place(
+          dx: -1em,
+          // this is hard-coded for the specific font - could be more flexible
+          dy: -0.0em + (line - 1) * 1.12em,
+          sym.arrow
+        ))
+      }
 
       code
     }, {
       [Stack:]
-      stack(steps, stack => list(
-        // make a list of all stack frames of the current state
-        ..stack.map(frame => {
-          frame.name
-          if frame.vars.len() != 0 {
-            [: ]
-            frame.vars.map(((name, value)) => [#name~=~#value]).join[, ]
-          }
-        })
-      ))
+      for (when, step) in steps {
+        let stack = step.state.stack
+        only(when, list(
+          // make a list of all stack frames of the current state
+          ..stack.map(frame => {
+            frame.name
+            if frame.vars.len() != 0 {
+              [: ]
+              frame.vars.pairs().map(((name, value)) => [#name~=~#value]).join[, ]
+            }
+          })
+        ))
+      }
     })
   ]
 }
