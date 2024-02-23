@@ -78,7 +78,7 @@
 ///
 /// - name (string): the name of the function; used for the call effect
 /// - first-line (int): the line at which the simulated function starts
-/// - callback: simulates the function, receives an `l()`-like function
+/// - callback (function): simulates the function, receives an `l()`-like function
 /// -> array
 #let func(name, first-line, callback) = {
   import "effects.typ": call, ret
@@ -137,6 +137,7 @@
 /// )
 ///
 /// ```
+/// This value can then be used to visualize the individual steps.
 ///
 /// - sequence (array): an execution sequence
 /// -> dictionary

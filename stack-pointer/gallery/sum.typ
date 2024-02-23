@@ -29,20 +29,18 @@
       return result; }
   ```
 
-  // this is where the magic happens: we simulate the above java code,
-  // generating an array of steps with all the actions that influence the
-  // call stack
+  // This is where the magic happens: we simulate the above Java code, generating an array of steps
+  // with all the execution information at that point in time.
   let steps = execute({
-    // println returns nothing, so it's easy to define and use
-    // it's also not part of the shown code, so the line numbers are `none`
+    // println returns nothing, so it's easy to define and use it's also not part of the shown code,
+    // so the line numbers are `none`
     let println(x) = func("println", none, l => {
       // always begin with adding the parameter variables
       l(none, push("x", x))
 
-      l(none, call("..."))
-      l(none, ret())
+      l(none, call("...")); l(none, ret())
 
-      // there's no exit() here, so the result is itself a list of only steps
+      // there's no retval() here, so the result is a regular execution sequence
     })
 
     // this is a function with return value. calling it needs some care
@@ -50,38 +48,32 @@
       l(0, push("x", x), push("y", y))
 
       // int result = x + y;
-      l(1)
       let result = x + y
-      // a new variable, push it
-      l(1, push("result", result))
+      // first step to the line, then show its effect: push the new variable
+      l(1); l(1, push("result", result))
 
       // return result;
-      l(2)
-      // the exit/return value will be first in the result of `add()`.
-      // it needs to be removed by the caller, so that the end result
-      // contains only the steps for the subslides
-      retval(result)
+      // The return value will be first in the result of `add()`, i.e. the result is not just an
+      // execution sequence. The return value needs to be removed by the caller.
+      l(2); retval(result)
     })
 
     let sum(x, y, z) = func("sum", 6, l => {
       l(0, push("x", x), push("y", y), push("z", z))
 
       // int result = add(x, y);
-      l(1)
-      // here we call a function with return value. We separate the return
-      // value from the steps. The result is kept in a variable and ...
-      let (result, ..steps) = add(x, y); steps
-      //   ... the steps are joined here ^^^^^ with the rest
-      l(1, push("result", result))
+      // Here we call a function with return value. We separate the return value from the steps.
+      // The result is kept in a variable and inserted...
+      let (result, ..steps) = add(x, y)
+      l(1); steps; l(1, push("result", result))
+      //    ^^^^^ ... here at the right position into the sequence
 
       // result = add(result, z);
-      l(2)
-      let (result, ..steps) = add(result, z); steps
-      l(2, assign("result", result))
+      let (result, ..steps) = add(result, z)
+      l(2); steps; l(2, assign("result", result))
 
       // return result;
-      l(3)
-      retval(result)
+      l(3); retval(result)
     })
 
     let main() = func("main", 1, l => {
@@ -97,40 +89,35 @@
       l(1, push("c", c))
 
       // int d = sum(a, b, c);
-      l(2)
-      let (d, ..steps) = sum(a, b, c); steps
-      l(2, push("d", d))
+      let (d, ..steps) = sum(a, b, c)
+      l(2); steps; l(2, push("d", d))
 
       // System.out.println(d);
-      l(3)
-      // here we call a function without return value. We can just write it
-      // as-is
-      println(d)
-      // because we want to show the stack in the state after println()
-      // returned, add a step here back in the main method
-      l(3)
+      // Here we call a function without return value. We can just write it as-is.
+      // the second `l(3)` shows the stack after returning from `println()`
+      l(3); println(d); l(3)
     })
 
     // call the main function, which returns all steps for generating the subslides
-    main()
-    // after the main() call, I also want to show the empty stack,
-    // so add a subslide on the final line of main()
-    l(5)
+    // after the main() call, I also want to show the empty stack, so add a subslide on the final
+    // line of main()
+    main(); l(5)
   })
+  // for polylux subslides, we also need to have a "time" to know when to show what information
   let steps = steps.enumerate(start: 1)
 
-  // when generating the slide, it's crucial to specify the max-repetitions
+  // when generating the slide in Polylux, it's crucial to specify the max-repetitions
   polylux-slide(max-repetitions: steps.len())[
     == Program execution and the stack
-
 
     #set text(size: 0.8em)
     #grid(columns: (50%, 1fr), {
       for (when, step) in steps {
         let line = step.step.line
+        // in some subslides, there are no lines to highlight
         if line == none { continue }
-        // this step has an associated line;
-        // render the highlight only in the specific subslide
+        // render the highlight only in the specific subslide:
+        // place an arrow where the code will be rendered
         only(when, place(
           dx: -1em,
           // this is hard-coded for the specific font - could be more flexible
@@ -144,8 +131,8 @@
       [Stack:]
       for (when, step) in steps {
         let stack = step.state.stack
+        // make a list of all stack frames of the current state
         only(when, list(
-          // make a list of all stack frames of the current state
           ..stack.map(frame => {
             frame.name
             if frame.vars.len() != 0 {
