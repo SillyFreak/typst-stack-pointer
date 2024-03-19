@@ -8,7 +8,9 @@ authors = [
 license = "MIT"
 description = "A library for visualizing the execution of (imperative) computer programs"
 repository = "https://github.com/SillyFreak/typst-packages/tree/main/stack-pointer"
-keywords = []
+categories = ["scripting", "presentation"]
+disciplines = ["computer-science"]
+keywords = ["program", "execution"]
 # compiler = ""
 exclude = [
   # docs and gallery are not needed in the final package
