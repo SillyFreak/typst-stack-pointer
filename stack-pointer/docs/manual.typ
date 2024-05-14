@@ -1,4 +1,4 @@
-#import "@preview/tidy:0.2.0"
+#import "@preview/tidy:0.3.0"
 
 #import "template.typ": *
 
@@ -81,7 +81,7 @@
 
 #show raw: it => {
   if it.lang == none {
-    let (text, lang: _, lines: _, ..fields) = it.fields()
+    let (text, lang: _, lines: _, theme: _, ..fields) = it.fields()
     raw(text, lang: "typc", ..fields)
   } else {
     it
