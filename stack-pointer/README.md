@@ -15,7 +15,7 @@ int foo() {
 }
 ```
 
-would be represented by the following Typst code (see the [manual](docs/manual.pdf) for a detailled explanation):
+would be represented by the following Typst code (see the [manual](docs/manual.pdf) for a detailed explanation):
 
 ```typ
 #let steps = execute({
