@@ -1,4 +1,4 @@
-# [unreleased](https://github.com/SillyFreak/typst-package-template/releases/tags/)
+# [unreleased](https://github.com/SillyFreak/typst-stack-pointer/releases/tags/)
 ## Added
 
 ## Removed
@@ -9,5 +9,5 @@
 
 ---
 
-# [v0.1.0](https://github.com/SillyFreak/typst-package-template/releases/tags/v0.1.0)
+# [v0.1.0](https://github.com/SillyFreak/typst-stack-pointer/releases/tags/v0.1.0)
 Initial Release
