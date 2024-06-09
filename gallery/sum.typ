@@ -1,12 +1,11 @@
-#import "@preview/stack-pointer:0.1.0"
-// #import "@local/stack-pointer:0.1.0"
+// make the PDF reproducible to ease version control
+#set document(date: none)
+
 // #import "../src/lib.typ" as stack-pointer
+#import "@preview/stack-pointer:0.1.0"
 
 #import "@preview/polylux:0.3.1": *
 #import themes.simple: *
-
-// make the PDF reproducible to ease version control
-#set document(date: none)
 
 #show: simple-theme
 
