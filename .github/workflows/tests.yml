@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         # add any other Typst versions that your package should support
-        typst-version: ["0.11"]
+        typst-version: ["0.9", "0.10", "0.11"]
         # the docs don't need to build with all versions supported by the package;
         # the latest one is enough
         include:
