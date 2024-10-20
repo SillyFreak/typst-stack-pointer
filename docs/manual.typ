@@ -1,15 +1,10 @@
-#import "@preview/tidy:0.3.0"
-#import "@preview/crudo:0.1.0"
-
-#import "template.typ": *
-
+#import "template.typ" as template: *
 #import "/src/lib.typ" as sp
 
 #let package-meta = toml("/typst.toml").package
-// #let date = none
 #let date = datetime(year: 2024, month: 2, day: 23)
 
-#show: project.with(
+#show: manual(
   title: "Stack Pointer",
   // subtitle: "...",
   authors: package-meta.authors.map(a => a.split("<").at(0).trim()),
@@ -63,7 +58,7 @@
   )
 
 
-  style(styles => {
+  context {
     let rows = range(steps.len(), step: columns).map(i => {
       steps.slice(i, calc.min(steps.len(), i + columns))
     })
@@ -73,11 +68,11 @@
       column-gutter: 0.4em,
       row-gutter: 0.4em,
       ..for row in rows {
-        let height = row.map(step => measure(render(step), styles).height).fold(0pt, calc.max)
+        let height = row.map(step => measure(render(step)).height).fold(0pt, calc.max)
         row.map(render.with(width: 100%, height: height))
       }
     )
-  })
+  }
 }
 
 #show raw: it => {
@@ -337,33 +332,23 @@ A more typical situation would probably put the steps on individual slides. In p
 
 Functions that return sequence items, or similar values like #ref-fn("retval()"), return a value of the following shape: `((type: "...", ...),)` -- that is, an array with a single element. That element is a dictionary with some string `type`, and any other payload fields depending on the type. The payload fields are exactly the parameters of the following helper functions, unless specified otherwise.
 
-#{
-  let module = tidy.parse-module(
-    read("/src/lib.typ"),
-    // label-prefix: "sp.",
-    scope: scope,
-  )
-  tidy.show-module(
-    module,
-    sort-functions: none,
-    style: tidy.styles.minimal,
-  )
-}
+#module(
+  read("/src/lib.typ"),
+  name: "stack-pointer",
+  label-prefix: none,
+  scope: scope,
+  show-module-name: false,
+)
 
 == Effects
 
 Effects are in a separate module because they have the greatest potential for extension,
 however they are also re-exported from the main module.
 
-#{
-  let module = tidy.parse-module(
-    read("/src/effects.typ"),
-    // label-prefix: "sp.effects.",
-    scope: scope,
-  )
-  tidy.show-module(
-    module,
-    sort-functions: none,
-    style: tidy.styles.minimal,
-  )
-}
+#module(
+  read("/src/effects.typ"),
+  name: "stack-pointer.effects",
+  label-prefix: none,
+  scope: scope,
+  show-module-name: false,
+)

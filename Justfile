@@ -9,7 +9,10 @@ default:
 # generate manual
 doc:
 	typst compile docs/manual.typ docs/manual.pdf
-	for f in $(find gallery -maxdepth 1 -name '*.typ'); do typst c "$f"; done
+	for f in $(find gallery -maxdepth 1 -name '*.typ'); do \
+		typst compile "$f"; \
+	done
+	# typst compile --ppi 250 "gallery/thumbnail.typ" "thumbnail.png"
 
 # run test suite
 test *args:
