@@ -330,7 +330,7 @@ A more typical situation would probably put the steps on individual slides. In p
 
 = Module reference
 
-Functions that return sequence items, or similar values like #ref-fn("retval()"), return a value of the following shape: `((type: "...", ...),)` -- that is, an array with a single element. That element is a dictionary with some string `type`, and any other payload fields depending on the type. The payload fields are exactly the parameters of the following helper functions, unless specified otherwise.
+Functions that return sequence items, or similar values like #ref-fn("retval()"), return a value of the following shape: `((type: "..", ..),)` -- that is, an array with a single element. That element is a dictionary with some string `type`, and any other payload fields depending on the type. The payload fields are exactly the parameters of the following helper functions, unless specified otherwise.
 
 #module(
   read("/src/lib.typ"),

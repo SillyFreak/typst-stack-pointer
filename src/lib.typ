@@ -122,18 +122,18 @@
 /// ```typc
 /// (
 ///   (
-///     step: (line: 1, ...),       // any step fields
+///     step: (line: 1, ..),        // any step fields
 ///     state: (                    // currently, executuion state is only the stack
 ///       stack: (
 ///         (name: "main", vars: (  // function main is the topmost stack frame
 ///           foo: 1,               // local variable foo in main has value 1
-///           ...                   // more local variables
+///           ..                    // more local variables
 ///         )),
-///         ...                     // more stack frames
+///         ..                      // more stack frames
 ///       )
 ///     )
 ///   ),
-///   ...                           // execution states for other steps
+///   ..                            // execution states for other steps
 /// )
 ///
 /// ```
