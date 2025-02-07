@@ -5,7 +5,7 @@ name = "stack-pointer"
 version = "0.1.0"
 entrypoint = "src/lib.typ"
 authors = [
-	"Clemens Koza <https://github.com/SillyFreak/>"
+  "Clemens Koza <https://github.com/SillyFreak/>"
 ]
 license = "MIT"
 description = "A library for visualizing the execution of (imperative) computer programs"
@@ -14,16 +14,17 @@ repository = "https://github.com/SillyFreak/typst-stack-pointer"
 keywords = ["program", "execution"]
 categories = ["scripting", "presentation"]
 disciplines = ["computer-science"]
-compiler = "0.9.0"
+compiler = "0.12.0"
 exclude = [
-	".github",
-	"docs",
-	"gallery",
-	"scripts",
-	"tests",
-	".typstignore",
-	"Justfile",
-	"thumbnail.png",
+  ".github",
+  "docs",
+  "gallery",
+  "scripts",
+  "tests",
+  ".typstignore",
+  "Justfile",
+  "thumbnail-dark.svg",
+  "thumbnail-light.svg",
 ]
 
 # [template]
