@@ -24,7 +24,13 @@
   import sp: *
 
   ```
-  let steps = eval(mode: "code", scope: scope, preamble.text + typst-code.text)
+  let typst-code-text = if typst-code.func() == raw {
+    typst-code.text
+  } else {
+    // we expect that this is a sequence with codly settings first followed by the raw block
+    typst-code.children.last().text
+  }
+  let steps = eval(mode: "code", scope: scope, preamble.text + typst-code-text)
   block(breakable: false, {
     grid(columns: (2fr, 3fr), sim-code, typst-code)
   })
@@ -84,13 +90,13 @@
   }
 }
 #let ref-line(n) = {
-  show raw: set text(fill: gray, size: 0.9em)
+  show raw: set text(fill: gray.darken(50%), size: 0.9em)
   raw(lang: "", "("+str(n)+")")
 }
 
 = Introduction
 
-_Stack Pointer_ provides tools for visualizing program execution. Its main use case is for presentations using frameworks such as #link("https://polylux.dev/book/")[Polylux], but it tries to be as general as possible.
+_Stack Pointer_ provides tools for visualizing program execution. Its main use case is for presentations using frameworks such as #link("https://touying-typ.github.io/")[Touying] or #link("https://polylux.dev/book/")[Polylux], but it tries to be as general as possible.
 
 There are two main concepts that underpin Stack Pointer: _effects_ and _steps_. An effect is something that changes program state, for example a variable assignment. Right now, the effects that are modeled by this library are limited to ones that affect the stack, giving it its name, but more possibilities would be interesting as well. A step is an instant during program execution at which the current program state should be visualized.
 
@@ -167,20 +173,27 @@ Regarding the call stack, a single function is not particularly interesting; the
     return;
   }
   ```,
-  ```typc
-  execute({
-    let foo(x) = {
-      l(6, call("foo"), push("x", x))
-      l(7); ret()  // (1)
-    }
-    let main() = {
-      l(1, call("main"))
-      l(2); foo(0); l(2)  // (2)
-      l(3); l(none, ret())  // (3)
-    }
-    main()
-  })
-  ```,
+  {
+    codly.codly(highlights: (
+      (line: 4, start: 11, end: 15, tag: ref-line(1)),
+      (line: 8, start: 19, end: 22, tag: ref-line(2)),
+      (line: 9, start: 11, end: 24, tag: ref-line(3)),
+    ))
+    ```typc
+    execute({
+      let foo(x) = {
+        l(6, call("foo"), push("x", x))
+        l(7); ret()
+      }
+      let main() = {
+        l(1, call("main"))
+        l(2); foo(0); l(2)
+        l(3); l(none, ret())
+      }
+      main()
+    })
+    ```
+  },
   exec-grid-render.with(columns: 5),
 )
 
@@ -207,7 +220,7 @@ Some of this function setup is still boilerplate, so Stack Pointer provides a si
   ```,
   ```typc
   execute({
-    let foo(x) = func("foo", 5, l => {
+    let foo(x) = func("foo", 6, l => {
       l(0, push("x", x))
       l(1)
     })
@@ -222,7 +235,7 @@ Some of this function setup is still boilerplate, so Stack Pointer provides a si
   exec-grid-render.with(columns: 5),
 )
 
-`func()` brings two conveniences: one, you put your implementation into a closure that gets an `l()` function that interprets line numbers relative to a first line number (for example, line 5 for `foo()`). This makes it easier to adapt the Typst simulation if you change the code example it refers to. Two, the `call()` and `ret()` effects don't need to be applied manually.
+`func()` brings two conveniences: one, you put your implementation into a closure that gets an `l()` function that interprets line numbers relative to a first line number (for example, line 6 for `foo()`). This makes it easier to adapt the Typst simulation if you change the code example it refers to. Two, the `call()` and `ret()` effects don't need to be applied manually.
 
 The downside is that this uniform handling means that we needed to manually add the last step after returning from `main()`.
 
@@ -241,26 +254,33 @@ The convenience of mapping example functions to Typst functions comes in part fr
     return 0;
   }
   ```,
-  ```typc
-  execute({
-    let foo() = func("foo", 6, l => {
-      l(0)
-      l(1); retval(0)  // (1)
+  {
+    codly.codly(highlights: (
+      (line: 4, start: 11, end: 19, tag: ref-line(1)),
+      (line: 9, start: 10, end: 10, tag: ref-line(2)),
+      (line: 9, start: 30, end: 33, tag: ref-line(3)),
+    ))
+    ```typc
+    execute({
+      let foo() = func("foo", 6, l => {
+        l(0)
+        l(1); retval(0)
+      })
+      let main() = func("main", 1, l => {
+        l(0)
+        l(1)
+        let (x, ..rest) = foo(); rest
+        l(1, push("x", x))
+        l(2)
+      })
+      main(); l(none)
     })
-    let main() = func("main", 1, l => {
-      l(0)
-      l(1)
-      let (x, ..rest) = foo(); rest  // (2)
-      l(1, push("x", x))
-      l(2)
-    })
-    main(); l(none)
-  })
-  ```,
+    ```
+  },
   exec-grid-render.with(columns: 5),
 )
 
-In line #ref-line(1) we have the first piece of the puzzle, the #ref-fn("retval()") function. This function is emitted by the implementation closure as if it was a sequence item, but it must be handled before `execute()` could see it because it isn't actually one. In line #ref-line(2) the caller, who normally receives an array of items, now also receives the return value as the first element of that array. By destructuring, the first element is removed, and then the rest of the array needs to be emitted so that these items are part of the complete execution sequence.
+In line #ref-line(1) we have the first piece of the puzzle, the #ref-fn("retval()") function. This function is emitted by the implementation closure as if it was a sequence item, but it must be handled before `execute()` could see it because it isn't actually one. The caller, who normally receives an array of items, now also receives the return value as the first element of that array. By destructuring, the first element is removed at #ref-line(2), and then the rest of the array needs to be emitted at #ref-line(3) so that these items are part of the complete execution sequence.
 
 == Displaying execution state
 
@@ -326,7 +346,7 @@ The following is a function that takes the example code and _one_ step as return
   grid(columns: (1fr,) * 4, ..range(1, 5).map(i => render(code, steps.at(i))))
 }
 
-A more typical situation would probably put the steps on individual slides. In polylux, for example, the `only()` function can be used to only show some information (the current line markers, the stack state) on specific subslides. To do so, it makes sense to first `enumerate(start: 1)` the steps, so that each step has a subslide index attached to it. The gallery has a complete example of using Stack Pointer with Polylux.
+A more typical situation would probably put the steps on individual slides. In Touying and Polylux, for example, the `only()` function can be used to only show some information (the current line markers, the stack state) on specific subslides. To do so, it makes sense to first `enumerate(start: 1)` the steps, so that each step has a subslide index attached to it. The gallery has a complete example of using Stack Pointer with Touying.
 
 = Module reference
 

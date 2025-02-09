@@ -1,5 +1,3 @@
-#import "@preview/polylux:0.3.1": only
-
 #import "effects.typ": *
 
 /// Sequence item with type `"step"`: a single step at which execution state can be inspected.

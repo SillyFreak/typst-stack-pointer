@@ -52,4 +52,4 @@ The `steps` variable now contains an array, where each element corresponds to on
 
 See the [manual](docs/manual.pdf) for details.
 
-Take a look at [this complete example](gallery/sum.pdf) of using Stack Pointer together with [Polylux](https://polylux.dev/book/).
+Take a look at [this complete example](gallery/sum.pdf) of using Stack Pointer together with [Touying](https://touying-typ.github.io/).
