@@ -1,31 +1,34 @@
 // make the PDF reproducible to ease version control
 #set document(date: none)
 
-// #import "../src/lib.typ" as stack-pointer
-#import "@preview/stack-pointer:0.1.0"
+#import "/src/lib.typ" as stack-pointer
+// #import "@preview/stack-pointer:0.1.0"
 
-#import "@preview/polylux:0.3.1": *
+#import "@preview/touying:0.5.5": *
 #import themes.simple: *
+#import "@preview/codly:1.2.0"
 
-#show: simple-theme
+#show: simple-theme.with(aspect-ratio: "16-9")
+#show: codly.codly-init.with()
 
 #{
   import stack-pointer: *
 
   let code = ```java
-    void main(String[] args) {
-      int a = 2, b = 3, c = 4;
-      int d = sum(a, b, c);
-      System.out.println(d);
-    }
-    void sum(int x, int y, int z) {
-      int result = add(x, y);
-      result = add(result, z);
-      return result;
-    }
-    void add(int x, int y) {
-      int result = x + y;
-      return result; }
+  void main(String[] args) {
+    int a = 2, b = 3, c = 4;
+    int d = sum(a, b, c);
+    System.out.println(d);
+  }
+  void sum(int x, int y, int z) {
+    int result = add(x, y);
+    result = add(result, z);
+    return result;
+  }
+  void add(int x, int y) {
+    int result = x + y;
+    return result;
+  }
   ```
 
   // This is where the magic happens: we simulate the above Java code, generating an array of steps
@@ -102,31 +105,40 @@
     // line of main()
     main(); l(5)
   })
-  // for polylux subslides, we also need to have a "time" to know when to show what information
+  // for touying subslides, we also need to have a "time" to know when to show what information
   let steps = steps.enumerate(start: 1)
 
-  // when generating the slide in Polylux, it's crucial to specify the max-repetitions
-  polylux-slide(max-repetitions: steps.len())[
-    == Program execution and the stack
+  // when generating the slide in Touying, it's crucial to specify repeat
+  slide(repeat: steps.len(), self => [
+    #let (uncover, only, alternatives) = utils.methods(self)
 
-    #set text(size: 0.8em)
-    #grid(columns: (50%, 1fr), {
+    #grid(columns: 2*(1fr,), column-gutter: 5mm, {
+      set text(size: 0.67em)
+
       for (when, step) in steps {
         let line = step.step.line
-        // in some subslides, there are no lines to highlight
-        if line == none { continue }
-        // render the highlight only in the specific subslide:
-        // place an arrow where the code will be rendered
-        only(when, place(
-          dx: -1em,
-          // this is hard-coded for the specific font - could be more flexible
-          dy: -0.0em + (line - 1) * 1.12em,
-          sym.arrow
-        ))
-      }
 
-      code
+        only(when, {
+          show: codly.local.with(number-format: (l) => {
+            if l == line {
+              place(
+                dx: -0.6em,
+                dy: -0.09em,
+                sym.triangle.filled.small.r,
+              )
+              set text(weight: "bold")
+              numbering("1", l)
+            } else {
+              numbering("1", l)
+            }
+          })
+
+          code
+        })
+      }
     }, {
+      set text(size: 0.8em)
+
       [Stack:]
       for (when, step) in steps {
         let stack = step.state.stack
@@ -142,5 +154,5 @@
         ))
       }
     })
-  ]
+  ])
 }
